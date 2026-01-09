@@ -16,6 +16,8 @@ const apps = [
     tagline: "store · browse · create · rate",
     folder: "fap",
     images: fapImages,
+    accent: "from-rose-500 to-pink-600",
+    glow: "bg-rose-500",
   },
   {
     name: "onlydads",
@@ -23,6 +25,8 @@ const apps = [
     tagline: "age gap erotica generations",
     folder: "dads",
     images: dadsImages,
+    accent: "from-amber-400 to-orange-500",
+    glow: "bg-amber-500",
   },
 ];
 
@@ -38,16 +42,16 @@ export default function Home() {
     "fap bank": null,
     "onlydads": null,
   });
+  const [mounted, setMounted] = useState(false);
   const lastMousePos = useRef({ x: 0, y: 0 });
 
-  // Initialize images and detect mobile
   useEffect(() => {
+    setMounted(true);
     const checkMobile = () => {
       const mobile = window.innerWidth < 768 || 'ontouchstart' in window;
       setIsMobile(mobile);
     };
 
-    // Set initial images
     setCardImages({
       "fap bank": getRandomImage(fapImages, "fap"),
       "onlydads": getRandomImage(dadsImages, "dads"),
@@ -58,7 +62,6 @@ export default function Home() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Desktop: change images on mouse movement
   useEffect(() => {
     if (isMobile) return;
 
@@ -68,8 +71,7 @@ export default function Home() {
         Math.pow(e.clientY - lastMousePos.current.y, 2)
       );
 
-      // Change images every 150px of mouse movement
-      if (distance > 150) {
+      if (distance > 120) {
         setCardImages({
           "fap bank": getRandomImage(fapImages, "fap"),
           "onlydads": getRandomImage(dadsImages, "dads"),
@@ -82,7 +84,6 @@ export default function Home() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [isMobile]);
 
-  // Mobile: change images on scroll
   useEffect(() => {
     if (!isMobile) return;
 
@@ -102,7 +103,7 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isMobile]);
 
-  const handleTap = (e, appName) => {
+  const handleTap = (appName) => {
     if (!isMobile) return;
     setCardImages(prev => ({
       ...prev,
@@ -121,74 +122,102 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 py-16 relative overflow-hidden">
-        {/* Background glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Header */}
-        <div className="relative z-10 text-center mb-20">
-          <p className="text-pink-500/50 text-xs tracking-[0.4em] uppercase mb-4">
-            welcome to
-          </p>
-          <h1 className="font-display text-4xl md:text-6xl tracking-tight text-white">
-            HOT GIRL SHIT
-          </h1>
-          <div className="w-24 h-px bg-gradient-to-r from-transparent via-pink-500 to-transparent mx-auto mt-6" />
+      <main className="min-h-screen bg-black text-white relative overflow-hidden">
+        {/* Animated gradient background */}
+        <div className="fixed inset-0 opacity-30">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-600 rounded-full mix-blend-multiply filter blur-[128px] animate-pulse" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[128px] animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-red-600 rounded-full mix-blend-multiply filter blur-[128px] animate-pulse" style={{ animationDelay: '2s' }} />
         </div>
 
-        {/* App Links */}
-        <div className="relative z-10 grid md:grid-cols-2 gap-8 w-full max-w-3xl">
-          {apps.map((app) => {
-            const imageToShow = cardImages[app.name];
+        {/* Noise texture overlay */}
+        <div className="fixed inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
 
-            return (
-              <a
-                key={app.name}
-                href={app.url}
-                className="group relative border border-zinc-800/50 hover:border-pink-500/50 rounded-2xl p-10 py-32 transition-all duration-500 bg-zinc-950/50 backdrop-blur-sm hover:bg-zinc-900/50 overflow-hidden"
-                onClick={(e) => handleTap(e, app.name)}
-              >
-                {/* Background image - always visible */}
-                {imageToShow && (
-                  <div className="absolute inset-0 z-0">
+        <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-12 md:py-20">
+          {/* Header */}
+          <header className={`text-center mb-12 md:mb-16 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            <p className="text-white/30 text-[10px] md:text-xs tracking-[0.5em] uppercase mb-3">
+              welcome to
+            </p>
+            <h1 className="font-display text-5xl md:text-7xl tracking-tight text-white mb-3">
+              HOT GIRL SHIT
+            </h1>
+            <div className="flex items-center justify-center gap-3">
+              <div className="w-12 h-px bg-gradient-to-r from-transparent to-pink-500" />
+              <span className="text-pink-500 text-xs">♦</span>
+              <div className="w-12 h-px bg-gradient-to-l from-transparent to-pink-500" />
+            </div>
+          </header>
+
+          {/* Cards */}
+          <div className={`grid md:grid-cols-2 gap-4 md:gap-6 w-full max-w-4xl transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            {apps.map((app, index) => {
+              const imageToShow = cardImages[app.name];
+
+              return (
+                <a
+                  key={app.name}
+                  href={app.url}
+                  onClick={() => handleTap(app.name)}
+                  className="group relative aspect-[4/5] md:aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer"
+                  style={{ animationDelay: `${index * 150}ms` }}
+                >
+                  {/* Image */}
+                  {imageToShow && (
                     <img
                       src={imageToShow}
                       alt=""
-                      className="w-full h-full object-cover opacity-70 transition-opacity duration-300"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                  </div>
-                )}
-
-                {/* Hover glow */}
-                <div className="absolute inset-0 rounded-2xl bg-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-                <div className="relative z-10">
-                  <h2 className="font-display text-5xl text-white group-hover:text-pink-400 transition-colors duration-300">
-                    {app.name.toUpperCase()}
-                  </h2>
-
-                  {app.tagline && (
-                    <p className="text-zinc-500 mt-2 text-sm tracking-wide">
-                      {app.tagline}
-                    </p>
                   )}
 
-                  {/* Arrow */}
-                  <div className="mt-8 text-zinc-600 group-hover:text-pink-500 transition-colors">
-                    <span className="text-xs tracking-widest uppercase">enter</span>
-                    <span className="ml-2 inline-block group-hover:translate-x-1 transition-transform">→</span>
-                  </div>
-                </div>
-              </a>
-            );
-          })}
-        </div>
+                  {/* Gradient overlays */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80" />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${app.accent} opacity-0 group-hover:opacity-20 transition-opacity duration-500 mix-blend-overlay`} />
+                  
+                  {/* Border glow on hover */}
+                  <div className={`absolute inset-0 rounded-2xl border border-white/10 group-hover:border-white/30 transition-colors duration-500`} />
+                  <div className={`absolute -inset-px rounded-2xl ${app.glow} opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500`} />
 
-        {/* Footer */}
-        <p className="relative z-10 text-zinc-700 text-[10px] mt-24 tracking-[0.3em] uppercase">
-          adults only · 18+
-        </p>
+                  {/* Content */}
+                  <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
+                    {/* Title */}
+                    <h2 className={`font-display text-4xl md:text-5xl lg:text-6xl text-white mb-2 transition-transform duration-500 group-hover:translate-x-2`}>
+                      {app.name.toUpperCase()}
+                    </h2>
+                    
+                    {/* Tagline */}
+                    <p className="text-white/50 text-sm md:text-base tracking-wide mb-6 transition-all duration-500 group-hover:text-white/70 group-hover:translate-x-2">
+                      {app.tagline}
+                    </p>
+
+                    {/* CTA */}
+                    <div className="flex items-center gap-3 transition-all duration-500 group-hover:translate-x-2">
+                      <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/10 group-hover:bg-gradient-to-br ${app.accent} transition-all duration-500`}>
+                        <svg className="w-4 h-4 text-white transition-transform duration-300 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </span>
+                      <span className="text-white/40 text-xs tracking-[0.2em] uppercase group-hover:text-white/70 transition-colors duration-500">
+                        enter
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Corner accent */}
+                  <div className={`absolute top-4 right-4 w-2 h-2 rounded-full bg-gradient-to-br ${app.accent} opacity-60`} />
+                </a>
+              );
+            })}
+          </div>
+
+          {/* Footer */}
+          <footer className={`mt-12 md:mt-16 text-center transition-all duration-1000 delay-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+            <p className="text-white/20 text-[10px] tracking-[0.4em] uppercase">
+              18+ adults only
+            </p>
+          </footer>
+        </div>
       </main>
     </>
   );
