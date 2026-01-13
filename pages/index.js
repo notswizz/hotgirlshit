@@ -1,118 +1,67 @@
 import Head from "next/head";
 import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
-
-const dadsImages = [
-  "1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg", "10.jpg", "11.jpg",
-];
-
-const fapImages = [
-  "1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg", "10.jpg", "11.jpg",
-];
+import { useState, useEffect } from "react";
 
 const apps = [
   {
     name: "fap bank",
     url: "https://fapbank.vercel.app/",
     tagline: "store · browse · create · rate",
-    folder: "fap",
-    images: fapImages,
     accent: "from-rose-500 to-pink-600",
-    glow: "bg-rose-500",
+    bg: "bg-rose-500",
   },
   {
     name: "onlydads",
     url: "https://onlydads.vercel.app/",
     tagline: "age gap erotica generations",
-    folder: "dads",
-    images: dadsImages,
     accent: "from-amber-400 to-orange-500",
-    glow: "bg-amber-500",
+    bg: "bg-amber-500",
   },
 ];
 
-function getRandomImage(images, folder) {
-  if (!images || images.length === 0) return null;
-  const randomIndex = Math.floor(Math.random() * images.length);
-  return `/${folder}/${images[randomIndex]}`;
+// Scattered positions for gallery images on desktop
+const imagePositions = [
+  { top: "5%", left: "3%", rotate: -12, size: "w-40 h-52" },
+  { top: "8%", right: "5%", rotate: 8, size: "w-36 h-48" },
+  { top: "25%", left: "8%", rotate: 6, size: "w-32 h-44" },
+  { top: "20%", right: "12%", rotate: -15, size: "w-44 h-56" },
+  { bottom: "30%", left: "2%", rotate: -8, size: "w-38 h-50" },
+  { bottom: "25%", right: "3%", rotate: 12, size: "w-40 h-52" },
+  { bottom: "8%", left: "10%", rotate: 15, size: "w-36 h-48" },
+  { bottom: "5%", right: "8%", rotate: -6, size: "w-32 h-44" },
+  { top: "45%", left: "1%", rotate: 10, size: "w-36 h-48" },
+  { top: "50%", right: "1%", rotate: -10, size: "w-38 h-50" },
+];
+
+async function fetchGalleryImages() {
+  try {
+    const res = await fetch("/api/gallery");
+    const data = await res.json();
+    return data.images || [];
+  } catch (err) {
+    console.error("Failed to fetch images:", err);
+    return [];
+  }
 }
 
 export default function Home() {
-  const [isMobile, setIsMobile] = useState(false);
-  const [cardImages, setCardImages] = useState({
-    "fap bank": null,
-    "onlydads": null,
-  });
+  const [galleryImages, setGalleryImages] = useState([]);
   const [mounted, setMounted] = useState(false);
-  const lastMousePos = useRef({ x: 0, y: 0 });
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768 || 'ontouchstart' in window;
-      setIsMobile(mobile);
-    };
-
-    setCardImages({
-      "fap bank": getRandomImage(fapImages, "fap"),
-      "onlydads": getRandomImage(dadsImages, "dads"),
-    });
-
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
+    
+    // Only fetch images for desktop
+    if (window.innerWidth >= 768) {
+      fetchGalleryImages().then(setGalleryImages);
+    }
+    
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  useEffect(() => {
-    if (isMobile) return;
-
-    const handleMouseMove = (e) => {
-      const distance = Math.sqrt(
-        Math.pow(e.clientX - lastMousePos.current.x, 2) +
-        Math.pow(e.clientY - lastMousePos.current.y, 2)
-      );
-
-      if (distance > 120) {
-        setCardImages({
-          "fap bank": getRandomImage(fapImages, "fap"),
-          "onlydads": getRandomImage(dadsImages, "dads"),
-        });
-        lastMousePos.current = { x: e.clientX, y: e.clientY };
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [isMobile]);
-
-  useEffect(() => {
-    if (!isMobile) return;
-
-    let lastScrollY = window.scrollY;
-
-    const handleScroll = () => {
-      if (Math.abs(window.scrollY - lastScrollY) > 20) {
-        setCardImages({
-          "fap bank": getRandomImage(fapImages, "fap"),
-          "onlydads": getRandomImage(dadsImages, "dads"),
-        });
-        lastScrollY = window.scrollY;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isMobile]);
-
-  const handleTap = (appName) => {
-    if (!isMobile) return;
-    setCardImages(prev => ({
-      ...prev,
-      [appName]: appName === "fap bank" 
-        ? getRandomImage(fapImages, "fap")
-        : getRandomImage(dadsImages, "dads"),
-    }));
-  };
 
   return (
     <>
@@ -131,16 +80,47 @@ export default function Home() {
           <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-red-600 rounded-full mix-blend-multiply filter blur-[128px] animate-pulse" style={{ animationDelay: '2s' }} />
         </div>
 
-        {/* Noise texture overlay */}
-        <div className="fixed inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
+        {/* Scattered Gallery - Desktop Only */}
+        {!isMobile && galleryImages.length > 0 && (
+          <div className="fixed inset-0 pointer-events-none">
+            {galleryImages.map((url, i) => {
+              const pos = imagePositions[i % imagePositions.length];
+              return (
+                <div
+                  key={i}
+                  className={`absolute ${pos.size} rounded-lg overflow-hidden shadow-2xl opacity-0 transition-all duration-1000`}
+                  style={{
+                    top: pos.top,
+                    bottom: pos.bottom,
+                    left: pos.left,
+                    right: pos.right,
+                    transform: `rotate(${pos.rotate}deg)`,
+                    opacity: mounted ? 0.7 : 0,
+                    transitionDelay: `${i * 100}ms`,
+                  }}
+                >
+                  <Image
+                    src={url}
+                    alt=""
+                    fill
+                    sizes="200px"
+                    className="object-cover hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-        <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-12 md:py-20">
+        {/* Main Content */}
+        <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-12">
           {/* Header */}
           <header className={`text-center mb-12 md:mb-16 transition-all duration-1000 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <p className="text-white/30 text-[10px] md:text-xs tracking-[0.5em] uppercase mb-3">
               welcome to
             </p>
-            <h1 className="font-display text-5xl md:text-7xl tracking-tight text-white mb-3">
+            <h1 className="font-display text-5xl md:text-7xl lg:text-8xl tracking-tight text-white mb-3">
               HOT GIRL SHIT
             </h1>
             <div className="flex items-center justify-center gap-3">
@@ -150,74 +130,35 @@ export default function Home() {
             </div>
           </header>
 
-          {/* Cards */}
-          <div className={`grid md:grid-cols-2 gap-4 md:gap-6 w-full max-w-4xl transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-            {apps.map((app, index) => {
-              const imageToShow = cardImages[app.name];
+          {/* Buttons */}
+          <div className={`flex flex-col md:flex-row gap-4 md:gap-6 transition-all duration-1000 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            {apps.map((app, index) => (
+              <a
+                key={app.name}
+                href={app.url}
+                className={`group relative px-8 py-6 md:px-12 md:py-8 rounded-2xl border border-white/10 backdrop-blur-sm bg-black/40 hover:bg-black/60 transition-all duration-500 hover:border-white/30 hover:scale-105`}
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
+                {/* Glow effect */}
+                <div className={`absolute -inset-1 rounded-2xl ${app.bg} opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500`} />
+                
+                <div className="relative text-center">
+                  <h2 className={`font-display text-3xl md:text-4xl lg:text-5xl text-white mb-2 bg-gradient-to-r ${app.accent} bg-clip-text group-hover:text-transparent transition-all duration-500`}>
+                    {app.name.toUpperCase()}
+                  </h2>
+                  <p className="text-white/40 text-xs md:text-sm tracking-wider group-hover:text-white/60 transition-colors duration-500">
+                    {app.tagline}
+                  </p>
+                </div>
 
-              return (
-                <a
-                  key={app.name}
-                  href={app.url}
-                  onClick={() => handleTap(app.name)}
-                  className="group relative aspect-[4/5] md:aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer"
-                  style={{ animationDelay: `${index * 150}ms` }}
-                >
-                  {/* Image - desktop only */}
-                  {!isMobile && imageToShow && (
-                    <Image
-                      src={imageToShow}
-                      alt=""
-                      fill
-                      sizes="50vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      priority={index === 0}
-                    />
-                  )}
-
-                  {/* Mobile gradient background */}
-                  {isMobile && (
-                    <div className={`absolute inset-0 bg-gradient-to-br ${app.accent} opacity-30`} />
-                  )}
-
-                  {/* Gradient overlays */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-80" />
-                  <div className={`absolute inset-0 bg-gradient-to-br ${app.accent} opacity-0 group-hover:opacity-20 transition-opacity duration-500 mix-blend-overlay`} />
-                  
-                  {/* Border glow on hover */}
-                  <div className={`absolute inset-0 rounded-2xl border border-white/10 group-hover:border-white/30 transition-colors duration-500`} />
-                  <div className={`absolute -inset-px rounded-2xl ${app.glow} opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500`} />
-
-                  {/* Content */}
-                  <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-end">
-                    {/* Title */}
-                    <h2 className={`font-display text-4xl md:text-5xl lg:text-6xl text-white mb-2 transition-transform duration-500 group-hover:translate-x-2`}>
-                      {app.name.toUpperCase()}
-                    </h2>
-                    
-                    {/* Tagline */}
-                    <p className="text-white/50 text-sm md:text-base tracking-wide mb-6 transition-all duration-500 group-hover:text-white/70 group-hover:translate-x-2">
-                      {app.tagline}
-                    </p>
-
-                    {/* CTA */}
-                    <div className="flex items-center gap-3 transition-all duration-500 group-hover:translate-x-2">
-                      <span className={`inline-flex items-center justify-center w-10 h-10 rounded-full bg-white/10 group-hover:bg-gradient-to-br ${app.accent} transition-all duration-500`}>
-                        <svg className="w-4 h-4 text-white transition-transform duration-300 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </span>
-                      <span className="text-white/40 text-xs tracking-[0.2em] uppercase group-hover:text-white/70 transition-colors duration-500">
-                        enter
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Corner accent */}
-                  <div className={`absolute top-4 right-4 w-2 h-2 rounded-full bg-gradient-to-br ${app.accent} opacity-60`} />
-                </a>
-              );
-            })}
+                {/* Arrow */}
+                <div className="absolute top-1/2 -right-3 -translate-y-1/2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">
+                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </a>
+            ))}
           </div>
 
           {/* Footer */}
