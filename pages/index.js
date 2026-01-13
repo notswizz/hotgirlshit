@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 
 const dadsImages = [
@@ -164,10 +165,13 @@ export default function Home() {
                 >
                   {/* Image */}
                   {imageToShow && (
-                    <img
+                    <Image
                       src={imageToShow}
                       alt=""
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      priority={index === 0}
                     />
                   )}
 
