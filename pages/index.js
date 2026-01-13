@@ -163,16 +163,21 @@ export default function Home() {
                   className="group relative aspect-[4/5] md:aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer"
                   style={{ animationDelay: `${index * 150}ms` }}
                 >
-                  {/* Image */}
-                  {imageToShow && (
+                  {/* Image - desktop only */}
+                  {!isMobile && imageToShow && (
                     <Image
                       src={imageToShow}
                       alt=""
                       fill
-                      sizes="(max-width: 768px) 100vw, 50vw"
+                      sizes="50vw"
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                       priority={index === 0}
                     />
+                  )}
+
+                  {/* Mobile gradient background */}
+                  {isMobile && (
+                    <div className={`absolute inset-0 bg-gradient-to-br ${app.accent} opacity-30`} />
                   )}
 
                   {/* Gradient overlays */}
