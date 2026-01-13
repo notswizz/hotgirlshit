@@ -47,7 +47,8 @@ async function fetchGalleryImages() {
 export default function Home() {
   const [galleryImages, setGalleryImages] = useState([]);
   const [mounted, setMounted] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  // Default to mobile-friendly (no heavy effects) until we detect desktop
+  const [isMobile, setIsMobile] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -73,12 +74,19 @@ export default function Home() {
       </Head>
 
       <main className="min-h-screen bg-black text-white relative overflow-hidden">
-        {/* Animated gradient background */}
-        <div className="fixed inset-0 opacity-30">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-600 rounded-full mix-blend-multiply filter blur-[128px] animate-pulse" />
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[128px] animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-red-600 rounded-full mix-blend-multiply filter blur-[128px] animate-pulse" style={{ animationDelay: '2s' }} />
-        </div>
+        {/* Animated gradient background - desktop only (heavy on mobile GPU) */}
+        {!isMobile && (
+          <div className="fixed inset-0 opacity-30">
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-600 rounded-full mix-blend-multiply filter blur-[128px] animate-pulse" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-[128px] animate-pulse" style={{ animationDelay: '1s' }} />
+            <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-red-600 rounded-full mix-blend-multiply filter blur-[128px] animate-pulse" style={{ animationDelay: '2s' }} />
+          </div>
+        )}
+        
+        {/* Simple gradient for mobile */}
+        {isMobile && (
+          <div className="fixed inset-0 bg-gradient-to-br from-pink-950/50 via-black to-purple-950/50" />
+        )}
 
         {/* Scattered Gallery - Desktop Only */}
         {!isMobile && galleryImages.length > 0 && (
@@ -136,7 +144,7 @@ export default function Home() {
               <a
                 key={app.name}
                 href={app.url}
-                className={`group relative px-8 py-6 md:px-12 md:py-8 rounded-2xl border border-white/10 backdrop-blur-sm bg-black/40 hover:bg-black/60 transition-all duration-500 hover:border-white/30 hover:scale-105`}
+                className={`group relative px-8 py-6 md:px-12 md:py-8 rounded-2xl border border-white/10 md:backdrop-blur-sm bg-black/60 md:bg-black/40 hover:bg-black/70 md:hover:bg-black/60 transition-all duration-500 hover:border-white/30 hover:scale-105`}
                 style={{ animationDelay: `${index * 150}ms` }}
               >
                 {/* Glow effect */}
