@@ -1,5 +1,4 @@
 import Head from "next/head";
-import Image from "next/image";
 import { useState, useEffect } from "react";
 
 const apps = [
@@ -19,35 +18,8 @@ const apps = [
   },
 ];
 
-// Scattered positions for gallery images on desktop
-const imagePositions = [
-  { top: "5%", left: "3%", rotate: -12, size: "w-40 h-52" },
-  { top: "8%", right: "5%", rotate: 8, size: "w-36 h-48" },
-  { top: "25%", left: "8%", rotate: 6, size: "w-32 h-44" },
-  { top: "20%", right: "12%", rotate: -15, size: "w-44 h-56" },
-  { bottom: "30%", left: "2%", rotate: -8, size: "w-38 h-50" },
-  { bottom: "25%", right: "3%", rotate: 12, size: "w-40 h-52" },
-  { bottom: "8%", left: "10%", rotate: 15, size: "w-36 h-48" },
-  { bottom: "5%", right: "8%", rotate: -6, size: "w-32 h-44" },
-  { top: "45%", left: "1%", rotate: 10, size: "w-36 h-48" },
-  { top: "50%", right: "1%", rotate: -10, size: "w-38 h-50" },
-];
-
-async function fetchGalleryImages() {
-  try {
-    const res = await fetch("/api/gallery");
-    const data = await res.json();
-    return data.images || [];
-  } catch (err) {
-    console.error("Failed to fetch images:", err);
-    return [];
-  }
-}
-
 export default function Home() {
-  const [galleryImages, setGalleryImages] = useState([]);
   const [mounted, setMounted] = useState(false);
-  // Default to mobile-friendly (no heavy effects) until we detect desktop
   const [isMobile, setIsMobile] = useState(true);
 
   useEffect(() => {
@@ -55,12 +27,6 @@ export default function Home() {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
-    // Only fetch images for desktop
-    if (window.innerWidth >= 768) {
-      fetchGalleryImages().then(setGalleryImages);
-    }
-    
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
@@ -74,7 +40,7 @@ export default function Home() {
       </Head>
 
       <main className="min-h-screen bg-black text-white relative overflow-hidden">
-        {/* Animated gradient background - desktop only (heavy on mobile GPU) */}
+        {/* Animated gradient background - desktop only */}
         {!isMobile && (
           <div className="fixed inset-0 opacity-30">
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-pink-600 rounded-full mix-blend-multiply filter blur-[128px] animate-pulse" />
@@ -86,39 +52,6 @@ export default function Home() {
         {/* Simple gradient for mobile */}
         {isMobile && (
           <div className="fixed inset-0 bg-gradient-to-br from-pink-950/50 via-black to-purple-950/50" />
-        )}
-
-        {/* Scattered Gallery - Desktop Only */}
-        {!isMobile && galleryImages.length > 0 && (
-          <div className="fixed inset-0 pointer-events-none">
-            {galleryImages.map((url, i) => {
-              const pos = imagePositions[i % imagePositions.length];
-              return (
-                <div
-                  key={i}
-                  className={`absolute ${pos.size} rounded-lg overflow-hidden shadow-2xl opacity-0 transition-all duration-1000`}
-                  style={{
-                    top: pos.top,
-                    bottom: pos.bottom,
-                    left: pos.left,
-                    right: pos.right,
-                    transform: `rotate(${pos.rotate}deg)`,
-                    opacity: mounted ? 0.7 : 0,
-                    transitionDelay: `${i * 100}ms`,
-                  }}
-                >
-                  <Image
-                    src={url}
-                    alt=""
-                    fill
-                    sizes="200px"
-                    className="object-cover hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                </div>
-              );
-            })}
-          </div>
         )}
 
         {/* Main Content */}
